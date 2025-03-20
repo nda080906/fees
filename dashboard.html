@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>St. Peter's School, Nasirabad - Student Fee Details</title>
+    <link rel="stylesheet" href="styles1.css">
+</head>
+<body>
+    <h1>St. Peter's School, Nasirabad - Student Fee Details</h1>
+
+    <label for="classSelect">Select Class:</label>
+    <select id="classSelect" onchange="loadSelectedClass()">
+        <option value="">-- Select Class --</option>
+    </select>
+
+    <div id="classContainer">
+        <!-- Selected class details will be shown here -->
+    </div>
+
+    <div id="printArea" style="display: none;"></div>
+
+    <script>
+        const studentsPerClass = 30;
+        const totalClasses = 9;
+        const classContainer = document.getElementById("classContainer");
+        const classSelect = document.getElementById("classSelect");
+        const printArea = document.getElementById("printArea");
+
+        let studentRecords = {};
+
+        for (let i = 1; i <= totalClasses; i++) {
+            let option = document.createElement("option");
+            option.value = i;
+            option.textContent = `Class ${i}`;
+            classSelect.appendChild(option);
+        }
+
+        function generateStudents(classNumber) {
+            if (!studentRecords[classNumber]) {
+                studentRecords[classNumber] = [];
+                for (let i = 1; i <= studentsPerClass; i++) {
+                    studentRecords[classNumber].push({
+                        roll: i,
+                        name: `Student ${i}`,
+                        father: `Father ${i}`,
+                        contact: `98765432${i % 10}${i % 10}`,
+                        address: "Nasirabad",
+                        totalFee: 10800,
+                        paidFee: 0,
+                        dueFee: 10800,
+                        lastDate: "16/03/2025",
+                        penalty: 100
+                    });
+                }
+            }
+            return studentRecords[classNumber];
+        }
+
+        function createClassTable(classNumber) {
+            let students = generateStudents(classNumber);
+            let tableHTML = `<h2>Class ${classNumber}</h2>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Roll Number</th>
+                            <th>Student Name</th>
+                            <th>Father Name</th>
+                            <th>Contact Number</th>
+                            <th>Address</th>
+                            <th>Total Fees</th>
+                            <th>Paid Fee</th>
+                            <th>Due Fee</th>
+                            <th>Last Date</th>
+                            <th>Penalty</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            students.forEach(student => {
+                tableHTML += `<tr>
+                    <td>${student.roll}</td>
+                    <td>${student.name}</td>
+                    <td>${student.father}</td>
+                    <td>${student.contact}</td>
+                    <td>${student.address}</td>
+                    <td>${student.totalFee}</td>
+                    <td>${student.paidFee}</td>
+                    <td>${student.dueFee}</td>
+                    <td>${student.lastDate}</td>
+                    <td>${student.penalty}</td>
+                    <td>
+                        <button onclick="printStudent(${student.roll}, ${classNumber})">Print</button>
+                        <button onclick="editStudent(${student.roll}, ${classNumber})">Edit</button>
+                    </td>
+                </tr>`;
+            });
+            tableHTML += `</tbody></table>`;
+            classContainer.innerHTML = tableHTML;
+        }
+
+        function loadSelectedClass() {
+            const selectedClass = classSelect.value;
+            if (selectedClass) {
+                createClassTable(selectedClass);
+            } else {
+                classContainer.innerHTML = "";
+            }
+        }
+
+        function printStudent(rollNumber, classNumber) {
+            const student = studentRecords[classNumber].find(s => s.roll === rollNumber);
+            printArea.innerHTML = `
+                <div style="padding: 20px; border: 2px solid #000;">
+                    <h2>St. Peter's Sr. Sec. School - Fee Receipt</h2>
+                    <p><strong>Roll Number:</strong> ${student.roll}</p>
+                    <p><strong>Student Name:</strong> ${student.name}</p>
+                    <p><strong>Father's Name:</strong> ${student.father}</p>
+                    <p><strong>Contact Number:</strong> ${student.contact}</p>
+                    <p><strong>Address:</strong> ${student.address}</p>
+                    <p><strong>Total Fees:</strong> ₹${student.totalFee}</p>
+                    <p><strong>Paid Fee:</strong> ₹${student.paidFee}</p>
+                    <p><strong>Due Fee:</strong> ₹${student.dueFee}</p>
+                    <p><strong>Last Date:</strong> ${student.lastDate}</p>
+                    <p><strong>Penalty:</strong> ₹${student.penalty}</p>
+                    <p style="text-align: left; margin-top: 50px;"><strong>Principal's Seal & Signature</strong></p>
+                </div>
+            `;
+            const printWindow = window.open('', '', 'width=600,height=700');
+            printWindow.document.write(printArea.innerHTML);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function editStudent(rollNumber, classNumber) {
+            const student = studentRecords[classNumber].find(s => s.roll === rollNumber);
+            const paidFee = prompt("Enter Paid Fee:", student.paidFee);
+            const dueFee = prompt("Enter Due Fee:", student.dueFee);
+            const penalty = prompt("Enter Penalty:", student.penalty);
+
+            if (paidFee !== null) student.paidFee = parseInt(paidFee) || 0;
+            if (dueFee !== null) student.dueFee = parseInt(dueFee) || 0;
+            if (penalty !== null) student.penalty = parseInt(penalty) || 0;
+
+            createClassTable(classNumber);
+        }
+    </script>
+</body>
+</html>
